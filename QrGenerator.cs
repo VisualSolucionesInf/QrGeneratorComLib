@@ -12,9 +12,9 @@ namespace QrGeneratorComLib
     [InterfaceType(ComInterfaceType.InterfaceIsDual)]
     public interface IQrGenerator
     {
-        byte[] GenerateQrBytes(string text);
-        string GenerateQrBase64(string text);
-        void SaveQrToFile(string text, string filePath, int width, int height);
+        byte[] GenerateQrBytes(string text, string extension = "PNG");
+        string GenerateQrBase64(string text, string extension = "PNG");
+        void SaveQrToFile(string text, string filePath, int width, int height, string extension = "PNG");
     }
 
     [ComVisible(true)]
@@ -37,31 +37,47 @@ namespace QrGeneratorComLib
             return bmp;
         }
 
-        public byte[] GenerateQrBytes(string text)
+        public byte[] GenerateQrBytes(string text, string extension = "PNG")
         {
             using (var bmp = GenerateQrBitmap(text))
             using (var ms = new MemoryStream())
             {
-                bmp.Save(ms, ImageFormat.Png);
+                bmp.Save(ms, GetImageFormat(extension));
                 return ms.ToArray();
             }
         }
 
-        public string GenerateQrBase64(string text)
+        public string GenerateQrBase64(string text, string extension = "PNG")
         {
             using (var bmp = GenerateQrBitmap(text))
             using (var ms = new MemoryStream())
             {
-                bmp.Save(ms, ImageFormat.Png);
+                bmp.Save(ms, GetImageFormat(extension));
                 return Convert.ToBase64String(ms.ToArray());
             }
         }
 
-        public void SaveQrToFile(string text, string filePath, int width, int height)
+        public void SaveQrToFile(string text, string filePath, int width, int height, string extension = "PNG")
         {
             using (var bmp = GenerateQrBitmap(text, width, height))
             {
-                bmp.Save(filePath, ImageFormat.Png);
+                bmp.Save(filePath, GetImageFormat(extension));
+            }
+        }
+
+        protected ImageFormat GetImageFormat(string extension)
+        {
+            switch (extension.Trim().ToUpper())
+            {
+                case "PNG":
+                    return ImageFormat.Png;
+                case "BMP":
+                    return ImageFormat.Bmp;
+                case "JPG":
+                case "JPEG":
+                    return ImageFormat.Jpeg;
+                default:
+                    return ImageFormat.Png;
             }
         }
     }
